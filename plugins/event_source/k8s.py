@@ -5,6 +5,7 @@ from kubernetes import config, dynamic, watch, client
 from kubernetes.client import api_client
 from typing import Any, Dict
 import os
+import time
 
 try:
     import urllib3
@@ -59,31 +60,41 @@ AUTH_ARG_SPEC = {
 }
 
 
+async def watch_loop(queue: asyncio.Queue, client, api, options, logger):
+    watcher = watch.Watch()
+    while True:
+        try:
+            for e in watcher.stream(api.get, **options):
+                await queue.put(
+                    dict(type=e["type"], resource=e["raw_object"].to_dict())
+                )
+        except Exception as e:
+            logger.error("Exception caught in watch loop: %s", e)
+            await asyncio.sleep(1)  # Sleep briefly before retrying
+
+
 async def main(queue: asyncio.Queue, args: Dict[str, Any]):
     logger = logging.getLogger()
     logger.info("Running k8s eda source")
 
-    try:
+    watch_task = None  # Initialize watch_task to None
 
+    try:
         api_version = args.get("api_version", "v1")
         kind = args.get("kind")
 
-        if api_version is None or args.get("kind") is None:
+        if api_version is None or kind is None:
             raise Exception(f"'api_version' and 'kind' parameters must be provided")
-
-        watcher = watch.Watch()
 
         label_selector = args.get("label_selectors", [])
         field_selector = args.get("field_selectors", [])
         name = args.get("name")
 
         # Fix to avoid failing due to https://github.com/kubernetes-client/python/pull/2076
-        ####
         if name:
             if not isinstance(field_selector, list):
-                field_selector = field_selector.split(',')
+                field_selector = field_selector.split(",")
             field_selector.append(f"metadata.name={name}")
-        ####
 
         if isinstance(label_selector, list):
             label_selector = ",".join(label_selector)
@@ -92,39 +103,57 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
             field_selector = ",".join(field_selector)
 
         options = dict(
-            watcher=watcher,
             label_selector=label_selector,
             field_selector=field_selector,
         )
 
-        options.update(dict((k, args[k]) for k in ['namespace'] if k in args))
+        options.update(dict((k, args[k]) for k in ["namespace"] if k in args))
 
         # Handle authentication
         auth_spec = _create_auth_spec(args)
         configuration = _create_configuration(auth_spec)
         headers = _create_headers(args)
         client = dynamic.DynamicClient(
-                api_client.ApiClient(configuration=configuration,)
-                )
+            api_client.ApiClient(
+                configuration=configuration,
+            )
+        )
 
         for header, value in headers.items():
             _set_header(client, header, value)
 
+        # Fetch existing objects and treat them as "ADDED" events
+        api = client.resources.get(api_version=api_version, kind=kind)
+        existing_objects = client.get(api, **options).items
+        for obj in existing_objects:
+            await queue.put(dict(type="ADDED", resource=obj.to_dict()))
+
+        # Start the watch loop in a separate task
+        watch_task = asyncio.create_task(
+            watch_loop(queue, client, api, options, logger)
+        )
+
+        last_heartbeat = time.time()
+        heartbeat_interval = 60  # Send a heartbeat every 60 seconds
+
         while True:
-            try:
-                api = client.resources.get(api_version=api_version, kind=kind)
+            # Send a heartbeat if the interval has passed
+            if time.time() - last_heartbeat > heartbeat_interval:
+                await queue.put(dict(type="HEARTBEAT"))
+                last_heartbeat = time.time()
 
-                # Get resourceVersion to determine where to start streaming events from
-                options.update(dict(resource_version=int(client.get(api, **options)["metadata"]["resourceVersion"])))
+            # Wait for a short period before checking again
+            await asyncio.sleep(3)
 
-                for e in client.watch(api, **options, ):
-                    await queue.put(dict(type=e["type"], resource=e["raw_object"]))
-                    await asyncio.sleep(1)
-            except Exception as e:
-                logger.error("Exception caught: %s", e)
     finally:
         logger.info("Stopping k8s eda source")
-        watcher.stop()
+        if watch_task:
+            watch_task.cancel()
+            try:
+                await watch_task
+            except asyncio.CancelledError:
+                pass
+
 
 # Authentication functions from Kubernetes Core Module
 # https://github.com/ansible-collections/kubernetes.core/blob/main/plugins/module_utils/k8s/client.py
@@ -161,6 +190,7 @@ def _create_auth_spec(args: Dict[str, Any]) -> Dict:
 
     return auth
 
+
 def _create_headers(args: Dict[str, Any]):
     header_map = {
         "impersonate_user": "Impersonate-User",
@@ -181,12 +211,14 @@ def _create_headers(args: Dict[str, Any]):
             headers[header_name] = value
     return headers
 
+
 def _set_header(client, header, value):
     if isinstance(value, list):
         for v in value:
             client.set_default_header(header_name=unique_string(header), header_value=v)
     else:
         client.set_default_header(header_name=header, header_value=value)
+
 
 class unique_string(str):
     _low = None
@@ -205,7 +237,6 @@ class unique_string(str):
             else:
                 self._low = unique_string(lower)
         return self._low
-
 
 
 def _create_configuration(auth: Dict):
@@ -261,7 +292,6 @@ def _create_configuration(auth: Dict):
     return configuration
 
 
-
 def _load_config(auth: Dict) -> None:
     kubeconfig = auth.get("kubeconfig")
     optional_arg = {
@@ -272,9 +302,7 @@ def _load_config(auth: Dict) -> None:
         if isinstance(kubeconfig, string_types):
             config.load_kube_config(config_file=kubeconfig, **optional_arg)
         elif isinstance(kubeconfig, dict):
-            config.load_kube_config_from_dict(
-                config_dict=kubeconfig, **optional_arg
-            )
+            config.load_kube_config_from_dict(config_dict=kubeconfig, **optional_arg)
     else:
         config.load_kube_config(config_file=None, **optional_arg)
 

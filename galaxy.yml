@@ -4,7 +4,7 @@ namespace: junipernetworks
 
 name: eda
 
-version: 0.0.1
+version: 0.1.1
 
 readme: README.md
 
@@ -22,6 +22,7 @@ tags:
   - cloud
   - infrastructure
   - eda
+  - junipernetworks
 
 dependencies: {}
 
@@ -31,4 +32,13 @@ documentation: https://github.com/Juniper/k8s.eda
 
 issues: https://github.com/Juniper/k8s.eda/issues
 
-build_ignore: []
+build_ignore:
+  - .github
+  - .venv
+  - .git
+  - .python-version
+  - .gitignore
+  - Makefile
+  - Pipfile*
+  - junipernetworks-*.tar.gz
+  - .eda-collection
