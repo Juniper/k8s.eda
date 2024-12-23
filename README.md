@@ -226,9 +226,10 @@ The following parameters are supported in the watch configuration.
 | kinds | List of kinds to watch. It's a list of dictionaries including all of the configuration values in this list except kinds. For each kind, it will use the top-level value as the default. For example, if namespace is set at the top level but not in one of the kind list entries, the namespace from the top will be used as a default. | |
 | name | Name of the kind to watch | |
 | namespace | Namespace to watch for `kind` | |
-| label_selectors | Labels to filter resources | [] |
-| field_selectors | Fields to filter resources | [] |
+| label_selectors | Labels to filter resources | `[]` |
+| field_selectors | Fields to filter resources | `[]` |
 | changed_fields | Filter modified events by specific fields | [] |
+| ignore_modified_deleted | Filter out `MODIFIED` events marked for deletion. | `False` |
 | log_level | Log level. Can be (`CRITICAL`,`ERROR`,`INFO`,`DEBUG`,`NOTSET`) | `INFO` |
 
 ## Building and Publishing a Decision Environment Image
