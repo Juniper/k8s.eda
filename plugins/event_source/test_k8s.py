@@ -136,6 +136,29 @@ async def wait_for_event(
         raise
 
 
+pod_manifest = {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "pytest",
+        "name": "example-pod",
+        "labels": {
+            "type": "eda",
+        },
+    },
+    "spec": {
+        "containers": [
+            {
+                "name": "example-container",
+                "image": "busybox",
+                "command": ["sleep", "1"],
+            }
+        ],
+        "terminationGracePeriodSeconds": 0,  # Set a short termination grace period
+    },
+}
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "test_case",
@@ -150,7 +173,7 @@ async def wait_for_event(
             },
             "k8sclient_objects": [
                 {
-                    "create": "create_namespace",
+                    "method": "create_namespace",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "Namespace",
@@ -180,7 +203,7 @@ async def wait_for_event(
             "created_watch_count": 3,
             "k8sclient_objects": [
                 {
-                    "create": "create_namespace",
+                    "method": "create_namespace",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "Namespace",
@@ -188,7 +211,7 @@ async def wait_for_event(
                     },
                 },
                 {
-                    "create": "create_namespaced_config_map",
+                    "method": "create_namespaced_config_map",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -208,14 +231,15 @@ async def wait_for_event(
                 "kind": "ConfigMap",
                 "changed_fields": ["data", "metadata.annotations.foo"],
                 "kubeconfig": KUBECONFIG,
-                "test_events_qty": 5,
+                "test_events_qty": 6,
                 "heartbeat_interval": HEARTBEAT_INTERVAL,
             },
             "created_watch_count": 2,
             "modified_watch_count": 3,
+            "deleted_watch_count": 1,
             "k8sclient_objects": [
                 {
-                    "create": "create_namespaced_config_map",
+                    "method": "create_namespaced_config_map",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -233,7 +257,7 @@ async def wait_for_event(
                     },
                 },
                 {
-                    "create": "create_namespaced_config_map",
+                    "method": "create_namespaced_config_map",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -248,7 +272,7 @@ async def wait_for_event(
                     },
                 },
                 {
-                    "modify": "patch_namespaced_config_map",
+                    "method": "patch_namespaced_config_map",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -263,7 +287,7 @@ async def wait_for_event(
                     },
                 },
                 {
-                    "modify": "patch_namespaced_config_map",
+                    "method": "patch_namespaced_config_map",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -278,7 +302,7 @@ async def wait_for_event(
                     },
                 },
                 {
-                    "modify": "patch_namespaced_config_map",
+                    "method": "patch_namespaced_config_map",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -291,7 +315,7 @@ async def wait_for_event(
                     },
                 },
                 {
-                    "modify": "patch_namespaced_config_map",
+                    "method": "patch_namespaced_config_map",
                     "body": {
                         "apiVersion": "v1",
                         "kind": "ConfigMap",
@@ -305,6 +329,60 @@ async def wait_for_event(
                         },
                     },
                 },
+                {
+                    "method": "delete_namespaced_config_map",
+                    "body": {
+                        "apiVersion": "v1",
+                        "kind": "ConfigMap",
+                        "metadata": {
+                            "name": "static",
+                            "namespace": "pytest",
+                        },
+                    },
+                },
+            ],
+        },
+        {
+            "args": {
+                "kind": "Pod",
+                "kubeconfig": KUBECONFIG,
+                "test_events_qty": 4,
+                "heartbeat_interval": HEARTBEAT_INTERVAL,
+            },
+            "created_watch_count": 1,
+            "modified_watch_count": 2,
+            "deleted_watch_count": 1,
+            "k8sclient_objects": [
+                {
+                    "method": "create_namespaced_pod",
+                    "body": pod_manifest,
+                },
+                {
+                    "method": "delete_namespaced_pod",
+                    "body": pod_manifest,
+                },
+            ],
+        },
+        {
+            "args": {
+                "kind": "Pod",
+                "kubeconfig": KUBECONFIG,
+                "test_events_qty": 3,
+                "heartbeat_interval": HEARTBEAT_INTERVAL,
+                "ignore_modified_deleted": True,
+            },
+            "created_watch_count": 1,
+            "modified_watch_count": 1,
+            "deleted_watch_count": 1,
+            "k8sclient_objects": [
+                {
+                    "method": "create_namespaced_pod",
+                    "body": pod_manifest,
+                },
+                {
+                    "method": "delete_namespaced_pod",
+                    "body": pod_manifest,
+                },
             ],
         },
     ],
@@ -312,6 +390,8 @@ async def wait_for_event(
         "create_namespace_kind",
         "create_namespace_configmap_kinds",
         "modify_configmap_changed_fields",
+        "modify_deleted_pod",
+        "ignore_modify_deleted_pod",
     ],
 )
 async def test_batch(k8s_client, test_case):
@@ -323,7 +403,7 @@ async def test_batch(k8s_client, test_case):
     """
     # Use a real asyncio.Queue
     queue = asyncio.Queue()
-
+    k8s_client.patch_namespaced_config_map
     # Run the main function in the background
     args = test_case["args"]
     main_task = asyncio.create_task(main(queue, args))
@@ -346,34 +426,51 @@ async def test_batch(k8s_client, test_case):
     k8sclient_objects = test_case["k8sclient_objects"]
 
     # Helper to invoke all object methods by name
-    def call_methods_by_name(method_name):
-        # Map kind to body
-        bodies = []
+    def call_methods():
+        # Count the number of methods of each kind in the test case
+        create_qty = 0
+        modify_qty = 0
+        delete_qty = 0
+
         for object in k8sclient_objects:
-            method = object.get(method_name)
+            method = object.get("method")
             if method:
+                method_prefix = method.split("_", 1)[0]
+                if method_prefix == "create":
+                    create_qty += 1
+                elif method_prefix == "patch":
+                    modify_qty += 1
+                elif method_prefix == "delete":
+                    delete_qty += 1
+                else:
+                    assert method in ("create", 'patch", delete')
+
                 body = object["body"]
                 metadata = body["metadata"]
                 namespace = metadata.get("namespace")
                 name = metadata.get("name")
-                bodies.append(body)
-                k8s_client_method = getattr(k8s_client, method)
-                kwargs = dict(body=body)
+
+                kwargs = {}
                 if namespace:
                     kwargs.update(namespace=namespace)
-                if method_name != "create":
+                if not method_prefix == "create":
                     kwargs.update(name=name)
+                if method_prefix == "delete":
+                    kwargs.update(grace_period_seconds=0)
+                else:
+                    kwargs.update(body=body)
+
+                k8s_client_method = getattr(k8s_client, method)
+                assert k8s_client_method
                 k8s_client_method(**kwargs)
-        return bodies
 
-    # Create all client objects
-    created = call_methods_by_name("create")
+        return create_qty, modify_qty, delete_qty
 
-    # Modify all client objects
-    modified = call_methods_by_name("modify")
+    # Call the k8s_client methods in the test case
+    create_qty, modify_qty, delete_qty = call_methods()
 
     # Wait for the main function to complete
-    await asyncio.wait_for(main_task, timeout=NAMESPACE_CREATION_TIMEOUT)
+    await asyncio.wait_for(main_task, timeout=POD_CREATION_TIMEOUT)
 
     # Make sure there is only one item in the queue
     queue_len = queue.qsize()
@@ -383,90 +480,22 @@ async def test_batch(k8s_client, test_case):
     # Retrieve all items from the queue to get the last item
     added_count = 0
     modified_count = 0
+    deleted_count = 0
     try:
         while True:
             event = queue.get_nowait()
             event_type = event["type"]
-            assert event_type in ["ADDED", "MODIFIED"]
+            assert event_type in ["ADDED", "MODIFIED", "DELETED"]
             if event_type == "ADDED":
                 added_count += 1
             elif event_type == "MODIFIED":
                 modified_count += 1
+            elif event_type == "DELETED":
+                deleted_count += 1
 
     except asyncio.QueueEmpty:
         pass
 
-    assert added_count == test_case.get("created_watch_count", len(created))
-    assert modified_count == test_case.get("modified_watch_count", len(modified))
-
-
-@pytest.mark.asyncio
-async def test_pod(k8s_client, request):
-    """
-    Test case to verify Pod events are received correctly.
-
-    :param k8s_client: The Kubernetes client fixture.
-    :param request: The pytest request object.
-    """
-    namespace = request.config.getoption("--namespace")
-
-    # Mock the arguments
-    args = {
-        "api_version": "v1",
-        "kind": "Pod",
-        "label_selectors": ["type=eda"],
-        "field_selectors": [],
-        "name": "example-pod",
-        "namespace": namespace,
-        "kubeconfig": KUBECONFIG,
-        "test_events_qty": 1,
-        "heartbeat_interval": 10,
-    }
-
-    # Use a real asyncio.Queue
-    queue = asyncio.Queue()
-
-    # Run the main function in the background
-    main_task = asyncio.create_task(main(queue, args))
-
-    # Wait for the main function to be ready
-    events = await wait_for_event(
-        queue, event_type=Watcher.INIT_DONE_EVENT, timeout=INIT_DONE_TIMEOUT
-    )
-    assert events
-    assert len(events) > 0
-    assert events[-1]["type"] == Watcher.INIT_DONE_EVENT
-
-    # Create a pod in the kind cluster
-    pod_manifest = {
-        "apiVersion": "v1",
-        "kind": "Pod",
-        "metadata": {
-            "name": "example-pod",
-            "labels": {
-                "type": "eda",
-            },
-        },
-        "spec": {
-            "containers": [
-                {
-                    "name": "example-container",
-                    "image": "busybox",
-                    "command": ["sleep", "1"],
-                }
-            ],
-            "terminationGracePeriodSeconds": 0,  # Set a short termination grace period
-        },
-    }
-    k8s_client.create_namespaced_pod(namespace=namespace, body=pod_manifest)
-
-    # Wait for the main function to complete
-    await asyncio.wait_for(main_task, timeout=POD_CREATION_TIMEOUT)
-
-    # Assertions
-    assert not queue.empty()  # Ensure the queue is not empty
-    item = await queue.get()
-    assert item["type"] == "ADDED"  # Check the type of the item
-    assert (
-        item["resource"]["metadata"]["name"] == "example-pod"
-    )  # Check the resource name
+    assert added_count == test_case.get("created_watch_count", create_qty)
+    assert modified_count == test_case.get("modified_watch_count", modify_qty)
+    assert deleted_count == test_case.get("deleted_watch_count", delete_qty)

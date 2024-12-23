@@ -116,6 +116,7 @@ class WatchController:
         "label_selectors",
         "field_selectors",
         "changed_fields",
+        "ignore_modified_deleted",
         "log_level",
     }
 
@@ -581,7 +582,7 @@ class Watcher:
                         event_kind = raw_object["kind"]
                         object_name = self._get_object_name(raw_object)
                         self.logger.debug(
-                            "%s %s %s to queue: %s",
+                            "%s %s %s event received from K8s: %s",
                             event_type,
                             event_kind,
                             object_name,
@@ -593,49 +594,70 @@ class Watcher:
                         # kubectl.kubernetes.io/last-applied-configuration and the current object,
                         # then the event is a change event and should be queued.
                         # Otherwise, skip the event.
-                        if event_type == "MODIFIED" and self.changed_fields:
-                            last_applied_configuration_str = (
-                                raw_object.get("metadata", {})
-                                .get("annotations", {})
-                                .get(
-                                    "kubectl.kubernetes.io/last-applied-configuration",
-                                    "{}",
+                        if event_type == "MODIFIED":
+                            if self.changed_fields:
+                                last_applied_configuration_str = (
+                                    raw_object.get("metadata", {})
+                                    .get("annotations", {})
+                                    .get(
+                                        "kubectl.kubernetes.io/last-applied-configuration",
+                                        "{}",
+                                    )
                                 )
-                            )
-                            last_applied_configuration = json.loads(
-                                last_applied_configuration_str
-                            )
-                            if any(
-                                get_nested_value(
-                                    last_applied_configuration, field.split(".")
+                                last_applied_configuration = json.loads(
+                                    last_applied_configuration_str
                                 )
-                                != get_nested_value(raw_object, field.split("."))
-                                for field in self.changed_fields
+                                if any(
+                                    get_nested_value(
+                                        last_applied_configuration, field.split(".")
+                                    )
+                                    != get_nested_value(raw_object, field.split("."))
+                                    for field in self.changed_fields
+                                ):
+                                    self.logger.debug(
+                                        "Change detected in %s fields %s, queuing event",
+                                        object_name,
+                                        self.changed_fields,
+                                    )
+                                else:
+                                    self.logger.debug(
+                                        "No change detected in fields %s, skipping event",
+                                        self.changed_fields,
+                                    )
+                                    continue
+                            elif self.args.get(
+                                "ignore_modified_deleted", False
+                            ) and raw_object.get("metadata", {}).get(
+                                "deletionTimestamp"
                             ):
                                 self.logger.debug(
-                                    "Change detected in %s fields %s, queuing event",
+                                    "Ignoring MODIFIED event for deleted object %s",
                                     object_name,
-                                    self.changed_fields,
-                                )
-                            else:
-                                self.logger.debug(
-                                    "No change detected in fields %s, skipping event",
-                                    self.changed_fields,
                                 )
                                 continue
 
+                        new_resource_version = int(
+                            e["raw_object"]["metadata"]["resourceVersion"]
+                        )
+                        if new_resource_version == self.resource_version:
+                            self.logger.warning(
+                                "%s %s %s resource version did not change, skipping.",
+                                event_type,
+                                event_kind,
+                                object_name,
+                            )
+                            continue
+
+                        # Update resource_version to the latest event
+                        self.resource_version = new_resource_version
+
                         # Info-level logging only for non-filtered events
+                        await self.queue.put(dict(type=event_type, resource=raw_object))
                         self.logger.info(
-                            "%s %s %s to queue",
+                            "QUEUED: %s %s %s",
                             event_type,
                             event_kind,
                             object_name,
-                        )
-                        await self.queue.put(dict(type=event_type, resource=raw_object))
-
-                        # Update resource_version to the latest event
-                        self.resource_version = int(
-                            e["raw_object"]["metadata"]["resourceVersion"]
                         )
 
                         if (

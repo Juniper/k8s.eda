@@ -4,6 +4,15 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.3.0
+=======
+
+Major Changes
+-------------
+
+- Add optional support for ignoring modified/deleted events.
+- Always skip queueing duplicate events (events that have the same resource version).
+
 v1.2.0
 =======
 
