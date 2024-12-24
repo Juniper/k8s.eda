@@ -4,6 +4,15 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.3.1
+=======
+
+Minor Changes
+-------------
+
+- Fix issue with igore_modified_deleted check not happening if changed_fields is set.
+- Fix "make test" target.
+
 v1.3.0
 =======
 

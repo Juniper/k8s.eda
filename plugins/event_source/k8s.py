@@ -625,7 +625,7 @@ class Watcher:
                                         self.changed_fields,
                                     )
                                     continue
-                            elif self.args.get(
+                            if self.args.get(
                                 "ignore_modified_deleted", False
                             ) and raw_object.get("metadata", {}).get(
                                 "deletionTimestamp"

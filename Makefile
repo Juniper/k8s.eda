@@ -98,7 +98,7 @@ release-build: pipenv $(EDA_COLLECTION_ROOT)/requirements.txt
 
 build: $(EDA_COLLECTION_ROOT)/.eda-collection
 
-test: pipenv
+test: test-bin pipenv
 	pipenv run pytest
 
 $(EDA_COLLECTION_ROOT)/.eda-collection: $(EDA_COLLECTION_ROOT)/galaxy.yml  $(PY_FILES) Makefile
