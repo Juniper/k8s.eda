@@ -345,6 +345,7 @@ pod_manifest = {
         {
             "args": {
                 "kind": "Pod",
+                "changed_fields": ["metadata.resourceVersion"],
                 "kubeconfig": KUBECONFIG,
                 "test_events_qty": 4,
                 "heartbeat_interval": HEARTBEAT_INTERVAL,
@@ -366,10 +367,11 @@ pod_manifest = {
         {
             "args": {
                 "kind": "Pod",
+                "changed_fields": ["metadata.resourceVersion"],
+                "ignore_modified_deleted": True,
                 "kubeconfig": KUBECONFIG,
                 "test_events_qty": 3,
                 "heartbeat_interval": HEARTBEAT_INTERVAL,
-                "ignore_modified_deleted": True,
             },
             "created_watch_count": 1,
             "modified_watch_count": 1,
