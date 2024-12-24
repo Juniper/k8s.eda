@@ -64,8 +64,8 @@ clean-pipenv:
 	rm -rf .venv
 
 tag:
-	git tag -a $(VERSION) -m "Release $(VERSION)"
-	git push $(REMOTE) $(VERSION)
+	git tag -a $(VERSION) -m "Release $(VERSION)" -f
+	git push $(REMOTE) $(VERSION) -f
 	git push --tags
 
 image: build
@@ -98,7 +98,7 @@ release-build: pipenv $(EDA_COLLECTION_ROOT)/requirements.txt
 
 build: $(EDA_COLLECTION_ROOT)/.eda-collection
 
-test: pipenv
+test: test-bin pipenv
 	pipenv run pytest
 
 $(EDA_COLLECTION_ROOT)/.eda-collection: $(EDA_COLLECTION_ROOT)/galaxy.yml  $(PY_FILES) Makefile
