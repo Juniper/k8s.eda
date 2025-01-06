@@ -6,3 +6,4 @@ kind
 *.tmp
 test-bin/
 .env
+*.swp
