@@ -64,8 +64,8 @@ clean-pipenv:
 	rm -rf .venv
 
 tag:
-	git tag -a $(VERSION) -m "Release $(VERSION)"
-	git push $(REMOTE) $(VERSION)
+	git tag -a $(VERSION) -m "Release $(VERSION)" -f
+	git push $(REMOTE) $(VERSION) -f
 	git push --tags
 
 image: build
