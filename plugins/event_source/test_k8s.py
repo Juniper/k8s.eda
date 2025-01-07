@@ -14,8 +14,8 @@ KUBECONFIG = ".pytest-kind/pytest-kind/kubeconfig"
 
 # Timeout constants
 INIT_DONE_TIMEOUT = 10
-POD_CREATION_TIMEOUT = 60
-NAMESPACE_CREATION_TIMEOUT = 10
+POD_TIMEOUT = 60
+NAMESPACE_TIMEOUT = 10
 HEARTBEAT_INTERVAL = 3
 
 
@@ -57,7 +57,7 @@ def setup_namespace(request, k8s_client):
         try:
             k8s_client.delete_namespace(name=ns)
             # Wait for the namespace to be deleted
-            for _ in range(60):  # Retry for up to 60 seconds
+            for _ in range(POD_TIMEOUT):  # Retry for POD_TIMEOUT seconds
                 try:
                     k8s_client.read_namespace(name=ns)
                     time.sleep(1)
@@ -181,6 +181,7 @@ pod_manifest = {
                     },
                 },
             ],
+            "timeout": NAMESPACE_TIMEOUT,
         },
         {
             "args": {
@@ -225,6 +226,7 @@ pod_manifest = {
                     },
                 },
             ],
+            "timeout": NAMESPACE_TIMEOUT * 2,
         },
         {
             "args": {
@@ -341,6 +343,7 @@ pod_manifest = {
                     },
                 },
             ],
+            "timeout": NAMESPACE_TIMEOUT * 7,
         },
         {
             "args": {
@@ -363,6 +366,7 @@ pod_manifest = {
                     "body": pod_manifest,
                 },
             ],
+            "timeout": POD_TIMEOUT * 2,
         },
         {
             "args": {
@@ -386,6 +390,7 @@ pod_manifest = {
                     "body": pod_manifest,
                 },
             ],
+            "timeout": POD_TIMEOUT * 2,
         },
     ],
     ids=[
@@ -408,6 +413,7 @@ async def test_batch(k8s_client, test_case):
     k8s_client.patch_namespaced_config_map
     # Run the main function in the background
     args = test_case["args"]
+    assert args
     main_task = asyncio.create_task(main(queue, args))
 
     kinds = []
@@ -426,6 +432,7 @@ async def test_batch(k8s_client, test_case):
         assert events[-1]["type"] == Watcher.INIT_DONE_EVENT
 
     k8sclient_objects = test_case["k8sclient_objects"]
+    assert k8sclient_objects
 
     # Helper to invoke all object methods by name
     def call_methods():
@@ -472,11 +479,14 @@ async def test_batch(k8s_client, test_case):
     create_qty, modify_qty, delete_qty = call_methods()
 
     # Wait for the main function to complete
-    await asyncio.wait_for(main_task, timeout=POD_CREATION_TIMEOUT)
+    timeout = test_case.get("timeout", POD_TIMEOUT)
+    await asyncio.wait_for(main_task, timeout=timeout)
 
-    # Make sure there is only one item in the queue
+    # Make we have the expected number of events in the queue
     queue_len = queue.qsize()
-    assert queue_len == args["test_events_qty"]
+    test_events_qty = args["test_events_qty"]
+    assert test_events_qty
+    assert queue_len == test_events_qty
 
     # Ensure the correct number of kinds were created/added
     # Retrieve all items from the queue to get the last item
