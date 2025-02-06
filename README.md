@@ -37,13 +37,13 @@ The following set of content is included within this collection:
 
 | Name  | Description |
 | ----- | ----------- |
-| [junipernetworks.eda.k8s](https://github.com/Juniper/k8s.eda/blob/main/docs/k8s.eda/junipernetworks.eda.k8s_source_plugin.rst) | Respond to events within a Kubernetes cluster. |
+| [junipernetworks.eda.k8s](https://github.com/Juniper/k8s.eda/blob/main/docs/k8s.eda/juniper.eda.k8s_source_plugin.rst) | Respond to events within a Kubernetes cluster. |
 
 ## Usage
 
 ### Overview
 
-The `junipernetworks.eda.k8s` extension provides a reliable means for taking action upon Kubernetes events.  It provides mechanisms to:
+The `juniper.eda.k8s` extension provides a reliable means for taking action upon Kubernetes events.  It provides mechanisms to:
 
 1. Specify what kind(s) to watch with various filter, including:
    * `api_version`
@@ -68,7 +68,7 @@ The following is an example of how to use the Kubernetes Event Source Plugin wit
 - name: Listen for ConfigMaps across
   hosts: all
   sources:
-    - junipernetworks.eda.k8s:
+    - juniper.eda.k8s:
         api_version: v1
         kind: ConfigMap
   rules:
@@ -94,7 +94,7 @@ You can also listen an any number of objects in the same rulebook activation. Fo
 - name: Listen for Namespace or Pod
   hosts: all
   sources:
-    - junipernetworks.eda.k8s:
+    - juniper.eda.k8s:
         kinds:
           - api_version: v1
             kind: Namespace
@@ -136,7 +136,7 @@ The event source can also be configured to monitor specific fields on a resource
 - name: Listen for ConfigMaps across
   hosts: all
   sources:
-    - junipernetworks.eda.k8s:
+    - juniper.eda.k8s:
         api_version: v1
         kind: ConfigMap
         changed_fields:
@@ -245,7 +245,7 @@ RH_USERNAME=jsmith
 RH_PASSWORD=XXXXXXXXXXXXXX
 ```
 
-Then `make image` will create an image named `junipernetworks-eda-de:latest`.
+Then `make image` will create an image named `juniper-eda-de:latest`.
 
 ### Image Publish
 

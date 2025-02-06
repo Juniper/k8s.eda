@@ -14,18 +14,23 @@ fi
 # Function to build the Docker image
 build_image() {
   docker login -u "$RH_USERNAME" -p "$RH_PASSWORD" registry.redhat.io
-  ansible-builder build -t junipernetworks-k8s-de -f de-builder.yml --verbosity=3 --build-arg RH_USERNAME="$RH_USERNAME" --build-arg RH_PASSWORD="$RH_PASSWORD"
+  ansible-builder build -t juniper-k8s-de -f de-builder.yml --verbosity=3 --build-arg RH_USERNAME="$RH_USERNAME" --build-arg RH_PASSWORD="$RH_PASSWORD"
 }
 
 # Function to tag the Docker image
 tag_image() {
-  docker tag junipernetworks-k8s-de:latest "$REGISTRY_URL/junipernetworks-k8s-de:$TAG"
+  docker tag juniper-k8s-de:latest "$REGISTRY_URL/juniper-k8s-de:$TAG"
 }
 
 # Function to push the Docker image
 push_image() {
-  docker push "$REGISTRY_URL/junipernetworks-k8s-de:$TAG"
-  echo "Decision environment image is pushed at $REGISTRY_URL/junipernetworks-k8s-de:$TAG"
+  docker push "$REGISTRY_URL/juniper-k8s-de:$TAG"
+  echo "Decision environment image is pushed at $REGISTRY_URL/juniper-k8s-de:$TAG"
+}
+
+# Function to export the Docker image
+export_image() {
+  docker save juniper-k8s-de:latest | gzip > juniper-k8s-de-$TAG.image.tgz
 }
 
 if [[ -n "$REGISTRY_URL" ]]; then
@@ -40,14 +45,17 @@ collection_version=$(echo $TAG | cut -d'-' -f 1)
 if [[ ! "$collecion_version" == "latest" ]]; then
   ansible_galaxy_version_arg="==$collection_version"
 fi
-if [[ ! -r collections/junipernetworks-eda.tar.gz ]]; then
+if [[ ! -r collections/juniper-eda.tar.gz ]]; then
   # otherwise, download the specific version
-  ansible-galaxy collection download junipernetworks.eda${ansible_galaxy_version_arg}
-  mv collections/junipernetworks-eda-*.tar.gz collections/junipernetworks-eda.tar.gz
+  ansible-galaxy collection download juniper.eda${ansible_galaxy_version_arg}
+  mv collections/juniper-eda-*.tar.gz collections/juniper-eda.tar.gz
 fi
 
 # Build the image
 build_image
+
+# Export the image
+export_image
 
 # Tag and push the image if REGISTRY_URL is set
 if [[  -n "$REGISTRY_URL" ]]; then
