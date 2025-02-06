@@ -9,7 +9,7 @@ VERSION := $(shell grep '^version: ' "$(EDA_COLLECTION_ROOT)/galaxy.yml" | cut -
 
 PY_VERSION := $(shell cat .python-version)
 
-EDA_COLLECTION = junipernetworks-eda-$(VERSION).tar.gz
+EDA_COLLECTION = juniper-eda-$(VERSION).tar.gz
 
 KIND_VERSION := v0.25.0
 KUBERNETES_VERSION := v1.29.10
@@ -70,8 +70,8 @@ tag:
 
 image: build
 	mkdir -p build/collections
-	rm -f build/collections/junipernetworks-apstra.tar.gz
-	cp "$(EDA_COLLECTION)" build/collections/junipernetworks-eda.tar.gz
+	rm -f build/collections/juniper-eda.tar.gz
+	cp "$(EDA_COLLECTION)" build/collections/juniper-eda.tar.gz
 	TAG=$(VERSION) pipenv run build/build_image.sh
 
 test-bin: Makefile test-bin/kubectl test-bin/kind
@@ -102,7 +102,7 @@ test: test-bin pipenv
 	pipenv run pytest
 
 $(EDA_COLLECTION_ROOT)/.eda-collection: $(EDA_COLLECTION_ROOT)/galaxy.yml  $(PY_FILES) Makefile
-	rm -f junipernetworks-eda-*.tar.gz
+	rm -f juniper-eda-*.tar.gz
 	pipenv run ansible-galaxy collection build $(EDA_COLLECTION_ROOT)
 	touch "$@"
 

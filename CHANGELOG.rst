@@ -4,6 +4,15 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.4.0
+=======
+
+Major Changes
+-------------
+
+- Change namespace to juniper.
+- Add image build support.
+
 v1.3.1
 =======
 

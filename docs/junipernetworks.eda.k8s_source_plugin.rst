@@ -2,7 +2,7 @@
 
 
 *******************
-junipernetworks.eda.k8s
+juniper.eda.k8s
 *******************
 
 **Manage Kubernetes (K8s) objects**
@@ -461,19 +461,19 @@ Examples
 .. code-block:: yaml
 
     - name: React to changes of all ConfigMaps
-      junipernetworks.eda.k8s:
+      juniper.eda.k8s:
         api_version: v1
         kind: ConfigMap
 
     - name: React to changes of all ConfigMaps with a name in a namespace
-      junipernetworks.eda.k8s:
+      juniper.eda.k8s:
         api_version: v1
         kind: ConfigMap
         namespace: mynamespace
         name: myconfigmap
 
     - name: React to changes of all ConfigMaps within a namespace with a specific label
-      junipernetworks.eda.k8s:
+      juniper.eda.k8s:
         api_version: v1
         kind: ConfigMap
         namespace: mynamespace
@@ -481,7 +481,7 @@ Examples
           - type=eda
 
     - name: React to changes of all ConfigMaps within a namespace, filtering MODIFIED events by specific fields
-      junipernetworks.eda.k8s:
+      juniper.eda.k8s:
         api_version: v1
         kind: ConfigMap
         namespace: mynamespace
@@ -490,7 +490,7 @@ Examples
           - metadata.annotations.eda
 
     - name: Watch multiple kinds with debug logging for pods.
-      junipernetworks.eda.k8s:
+      juniper.eda.k8s:
         api_version: v1
         kinds:
           - kind: ConfigMap

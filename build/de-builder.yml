@@ -6,13 +6,13 @@ images:
     name: 'registry.redhat.io/ansible-automation-platform-25/de-supported-rhel8:latest'
 
 additional_build_files:
-  - src: collections/junipernetworks-eda.tar.gz
+  - src: collections/juniper-eda.tar.gz
     dest: collections/
 
 dependencies:
   galaxy:
     collections:
-      - source: collections/junipernetworks-eda.tar.gz
+      - source: collections/juniper-eda.tar.gz
         type: file
 
   python_interpreter:
