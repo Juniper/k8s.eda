@@ -4,6 +4,15 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.4.1
+=======
+
+Minor Changes
+-------------
+
+- Fix links in documentation.
+- Repackage.
+
 v1.4.0
 =======
 

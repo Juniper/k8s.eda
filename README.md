@@ -37,7 +37,7 @@ The following set of content is included within this collection:
 
 | Name  | Description |
 | ----- | ----------- |
-| [junipernetworks.eda.k8s](https://github.com/Juniper/k8s.eda/blob/main/docs/k8s.eda/juniper.eda.k8s_source_plugin.rst) | Respond to events within a Kubernetes cluster. |
+| [juniper.eda.k8s](https://github.com/Juniper/k8s.eda/blob/main/docs/k8s.eda/juniper.eda.k8s_source_plugin.rst) | Respond to events within a Kubernetes cluster. |
 
 ## Usage
 

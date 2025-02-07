@@ -4,7 +4,7 @@ namespace: juniper
 
 name: eda
 
-version: 1.4.0
+version: 1.4.1
 
 readme: README.md
 
@@ -38,6 +38,7 @@ build_ignore:
   - .git
   - .python-version
   - .gitignore
+  - build
   - Makefile
   - Pipfile*
   - juniper*-*.tar.gz

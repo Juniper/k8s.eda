@@ -2,5 +2,6 @@
     "python.testing.pytestArgs": ["--keep-cluster"],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "debugpy.debugJustMyCode": false
+    "debugpy.debugJustMyCode": false,
+    "ansible.python.interpreterPath": "/home/ejacques/projects/k8s.eda/.venv/bin/python"
 }
