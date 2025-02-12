@@ -4,7 +4,7 @@ namespace: juniper
 
 name: eda
 
-version: 1.4.2
+version: 1.4.3
 
 readme: README.md
 
@@ -22,6 +22,7 @@ tags:
   - cloud
   - infrastructure
   - eda
+  - juniper
   - junipernetworks
 
 dependencies: {}

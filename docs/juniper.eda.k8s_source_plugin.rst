@@ -1,4 +1,4 @@
-.. _junipernetworks.eda_k8s_source_plugin:
+.. _juniper.eda_k8s_source_plugin:
 
 
 *******************

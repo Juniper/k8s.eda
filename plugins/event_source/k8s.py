@@ -667,15 +667,17 @@ class Watcher:
                             # Update the event count
                             self.event_count += 1
 
-                    # If we didn't receive any events, send a heartbeat event
+                    # Include heartbeat events in the test event count
                     if timed_out:
                         self.event_count += 1
 
-                    # Include heartbeat events in the test event count
                     if (
                         isinstance(self.test_events_qty, int)
                         and self.event_count >= self.test_events_qty
                     ):
+                        self.logger.info(
+                            f"Test event count reached: {self.test_events_qty}"
+                        )
                         return
                 except ApiException as e:
                     if (

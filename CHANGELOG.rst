@@ -4,6 +4,15 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.4.3
+=======
+
+Minor Changes
+-------------
+
+- Update python dependencies.
+- Log when test event count is reached.
+
 v1.4.2
 =======
 
