@@ -4,6 +4,14 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.4.4
+=======
+
+Minor Changes
+-------------
+
+- Explicitly set base image version.
+
 v1.4.3
 =======
 

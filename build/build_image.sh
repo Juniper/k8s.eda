@@ -20,7 +20,7 @@ fi
 # Function to build the Docker image
 build_image() {
   docker login -u "$RH_USERNAME" -p "$RH_PASSWORD" registry.redhat.io
-  ansible-builder build -t juniper-k8s-de -f de-builder.yml --verbosity=3 --build-arg RH_USERNAME="$RH_USERNAME" --build-arg RH_PASSWORD="$RH_PASSWORD"
+  ansible-builder build -t juniper-k8s-de -f de-builder.yml --verbosity=3
 }
 
 # Function to tag the Docker image

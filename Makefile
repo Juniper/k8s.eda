@@ -53,10 +53,9 @@ define install_collection_if_missing
 endef
 
 pipenv:
-	pipenv check 2>/dev/null || \
-		(pip install pipenv pre-commit && \
-		 pre-commit install && \
-		 pipenv install --dev)
+	(pip install pipenv pre-commit && \
+	 pre-commit install && \
+	 pipenv install --dev)
 
 clean-pipenv:
 	pipenv --rm 2>/dev/null || true
