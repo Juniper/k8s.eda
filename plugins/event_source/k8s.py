@@ -32,7 +32,7 @@ if __name__ == "__main__":
         "label_selectors": ["app=myapp"],
         "field_selectors": ["metadata.name=myapp"],
         "name": "myapp",
-        "heartbeat_interval": 60,
+        "heartbeat_interval": 30,
         "test_events_qty": 10,
     }
     asyncio.run(main(queue, args))
@@ -419,7 +419,7 @@ class Watcher:
     INIT_DONE_EVENT = "INIT_DONE"
 
     # Default heartbeat interval
-    DEFAULT_HEARTBEAT_INTERVAL = 60
+    DEFAULT_HEARTBEAT_INTERVAL = 30
 
     def __init__(
         self,

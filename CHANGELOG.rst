@@ -4,6 +4,14 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.4.2
+=======
+
+Minor Changes
+-------------
+
+- Change default heartbeat interval to 30 seconds.
+
 v1.4.1
 =======
 
