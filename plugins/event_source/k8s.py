@@ -604,9 +604,10 @@ class Watcher:
                                         "{}",
                                     )
                                 )
-                                last_applied_configuration = json.loads(
-                                    last_applied_configuration_str
-                                )
+                                if last_applied_configuration_str:
+                                    last_applied_configuration = json.loads(
+                                        last_applied_configuration_str
+                                    )
                                 if any(
                                     get_nested_value(
                                         last_applied_configuration, field.split(".")

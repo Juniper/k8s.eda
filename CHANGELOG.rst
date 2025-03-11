@@ -4,6 +4,15 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.4.5
+=======
+
+Minor Changes
+-------------
+
+- Modified evetns with changed fileds are to check annotations last-applied configuration.
+
+
 v1.4.4
 =======
 

@@ -387,6 +387,50 @@ pod_manifest = {
                 },
             ],
         },
+        {
+            "args": {
+                "kind": "ConfigMap",
+                "changed_fields": ["data", "metadata.annotations.foo"],
+                "kubeconfig": KUBECONFIG,
+                "test_events_qty": 2,
+                "heartbeat_interval": HEARTBEAT_INTERVAL,
+            },
+            "created_watch_count": 1,
+            "modified_watch_count": 1,
+            "deleted_watch_count": 0,
+            "k8sclient_objects": [
+                {
+                    "method": "create_namespaced_config_map",
+                    "body": {
+                        "apiVersion": "v1",
+                        "kind": "ConfigMap",
+                        "metadata": {
+                            "name": "no-last-applied-config",
+                            "namespace": "pytest",
+                            "description": "CONFIG MAP WITHOUT LAST APPLIED CONFIG",
+                        },
+                        "data": {
+                            "key": "value",
+                        },
+                    },
+                },
+                {
+                    "method": "patch_namespaced_config_map",
+                    "body": {
+                        "apiVersion": "v1",
+                        "kind": "ConfigMap",
+                        "metadata": {
+                            "name": "no-last-applied-config",
+                            "namespace": "pytest",
+                            "description": "UPDATED CONFIG MAP WITHOUT LAST APPLIED CONFIG",
+                        },
+                        "data": {
+                            "key": "new-value",
+                        },
+                    },
+                },
+            ],
+        },
     ],
     ids=[
         "create_namespace_kind",
@@ -394,6 +438,7 @@ pod_manifest = {
         "modify_configmap_changed_fields",
         "modify_deleted_pod",
         "ignore_modify_deleted_pod",
+        "modify_configmap_no_last_applied_config",
     ],
 )
 async def test_batch(k8s_client, test_case):
