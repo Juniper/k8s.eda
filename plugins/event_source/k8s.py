@@ -604,10 +604,18 @@ class Watcher:
                                         "{}",
                                     )
                                 )
+                                # Check if the fields in changed_fields is present and If present, check if last-applied-configuration is present
+                                # parse it as JSON
+                                # If not present, skip the event
                                 if last_applied_configuration_str:
                                     last_applied_configuration = json.loads(
                                         last_applied_configuration_str
                                     )
+                                else:
+                                    self.logger.debug(
+                                        "No last-applied-configuration found, skipping event"
+                                    )
+                                    continue
                                 if any(
                                     get_nested_value(
                                         last_applied_configuration, field.split(".")

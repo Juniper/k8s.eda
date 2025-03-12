@@ -10,7 +10,7 @@ v1.4.5
 Minor Changes
 -------------
 
-- Modified evetns with changed fileds are to check annotations last-applied configuration.
+- Edge case fix when last-applied-configuration is not present in the event and the event is a MODIFIED event.
 
 
 v1.4.4
