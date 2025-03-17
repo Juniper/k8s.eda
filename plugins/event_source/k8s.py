@@ -613,7 +613,9 @@ class Watcher:
                                     )
                                 else:
                                     self.logger.debug(
-                                        "No last-applied-configuration found, skipping event"
+                                        "No last-applied-configuration found, skipping event",
+                                        object_name,
+                                        self.changed_fields,
                                     )
                                     continue
                                 if any(
@@ -631,6 +633,7 @@ class Watcher:
                                 else:
                                     self.logger.debug(
                                         "No change detected in fields %s, skipping event",
+                                        object_name,
                                         self.changed_fields,
                                     )
                                     continue
@@ -642,6 +645,7 @@ class Watcher:
                                 self.logger.debug(
                                     "Ignoring MODIFIED event for deleted object %s",
                                     object_name,
+                                    self.changed_fields,
                                 )
                                 continue
 
