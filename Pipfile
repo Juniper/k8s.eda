@@ -5,8 +5,8 @@ name = "pypi"
 # Packages in this list should ~=, used to generate requirements.txt
 
 [packages]
-kubernetes-asyncio = "*"
-kubernetes = "*"
+kubernetes-asyncio = "31.1.1"
+kubernetes = "31.0.0"
 
 [dev-packages]
 pytest-asyncio = "*"
