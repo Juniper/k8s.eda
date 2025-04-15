@@ -51,7 +51,7 @@ setup: clean-pipenv
 define install_collection_if_missing
 	pipenv run ansible-doc $(1) &>/dev/null || pipenv run ansible-galaxy collection install --ignore-certs --force $(1)
 endef
-NEWVER := $(shell sed -n '/^version: / s,.*"\(.*\)"$$,\1,p' $(EDA_COLLECTION_ROOT)/galaxy.yml)-$(SHORT_COMMIT)
+NEWVER := $(shell grep '^version: ' "$(EDA_COLLECTION_ROOT)/galaxy.yml" | cut -d' ' -f2)-$(SHORT_COMMIT)
 update-version:
 	sed -i "s/^version: \".*\"/version: \"$(NEWVER)\"/" $(EDA_COLLECTION_ROOT)/galaxy.yml
 pipenv:
