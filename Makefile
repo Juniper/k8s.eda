@@ -54,7 +54,7 @@ endef
 
 NEWVER := $(shell grep '^version: ' "$(EDA_COLLECTION_ROOT)/galaxy.yml" | cut -d' ' -f2)-$(SHORT_COMMIT)
 update-version:
-        sed -i "s/^version: .*/version: $(NEWVER)/" $(EDA_COLLECTION_ROOT)/galaxy.yml
+	sed -i "s/^version: .*/version: $(NEWVER)/" $(EDA_COLLECTION_ROOT)/galaxy.yml
 pipenv:
 	(pip install pipenv pre-commit && \
 	 pre-commit install && \
