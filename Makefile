@@ -26,6 +26,10 @@ else
 	arch := $(MACHINE)
 endif
 
+NEWVER := $(shell grep '^version: ' "$(EDA_COLLECTION_ROOT)/galaxy.yml" | cut -d' ' -f2)-$(SHORT_COMMIT)
+update-version:
+	sed -i "s/^version: \".*\"/version: \"$(NEWVER)\"/" $(EDA_COLLECTION_ROOT)/galaxy.yml
+
 # OS-specific settings
 OS := $(shell uname -s)
 ifeq ($(OS),Darwin)
