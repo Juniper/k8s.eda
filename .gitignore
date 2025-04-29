@@ -8,3 +8,4 @@ test-bin/
 .env
 *.swp
 .ansible
+.pytest_cache/

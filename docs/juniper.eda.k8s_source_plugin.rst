@@ -452,6 +452,7 @@ Notes
 
 .. note::
    - To avoid SSL certificate validation errors when ``validate_certs`` is *True*, the full certificate chain for the API server must be provided via ``ca_cert`` or in the kubeconfig file.
+   - changed_fields will works only for MODIFIED events which has annotations kubectl.kubernetes.io/last-applied-configuration.
 
 
 

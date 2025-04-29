@@ -4,6 +4,15 @@ Junipernetworks EDA source Collection Release Notes
 
 .. contents:: Topics
 
+v1.4.5
+=======
+
+Minor Changes
+-------------
+
+- Edge case fix when last-applied-configuration is not present in the event and the event is a MODIFIED event.
+
+
 v1.4.4
 =======
 
