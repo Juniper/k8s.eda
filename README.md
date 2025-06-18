@@ -101,7 +101,7 @@ You can also listen an any number of objects in the same rulebook activation. Fo
           - api_version: v1
             kind: Pod
             label_selectors:
-              - app: myapp
+              - "app=myapp"
   rules:
     - name: Existing Namespaces
       condition: event.type == "INIT_DONE" and event.resources.kind == "NamespaceList"
